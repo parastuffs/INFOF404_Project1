@@ -5,18 +5,22 @@
 class Simulator
 {
 public:
-	Simulator(char* inputFile,int delta);
+	Simulator(int n,int tasksParam[][4],int delta);
 	~Simulator(){}
-	int countTasks(char* inputFile);
-	void tasksFromFile(char* inputFile,Task* tasks[]);
+	void createTasks(int tasksParam[][4],Task* tasks[],int n);
 	int gcd(int a,int b);
 	int lcm(int a,int b);
 	int computeStudInt(Task* tasks[],int n);
 	void simulation(Task* tasks[],int n,int delta);
 	void setPriorities(Task* tasks[],int taskPrior[],int n,int time);
+	int getPreemptions() {return this->preemptions;}
+	int getIdleTime() {return this->idleTime;}
 
 private:
 //	Task* tasks[];
+	int preemptions;
+	int idleTime;
+	int delta;
 };
 
 #endif

@@ -6,64 +6,38 @@
 #include <sstream>
 #include <cstdio>
 #include <cstdlib>
-
+//TODO remove useless includes
 
 //#define _DEBUG
 
 using namespace std;
 
-Simulator::Simulator(char* inputFile,int delta)
+Simulator::Simulator(int n, int tasksParam[][4],int delta)
 {
 
-	cout << inputFile << " " << delta << endl;
+	this->delta = delta;
 
-	int n = countTasks(inputFile);
 	Task* tasks[n];//Array containing the tasks objects
 
-	tasksFromFile(inputFile,tasks);
+	createTasks(tasksParam,tasks,n);
 
+	//TODO refactor to have n and delta as private members of the class
 	simulation(tasks,n,delta);
 }
 
-int Simulator::countTasks(char* inputFile)
-{
-	int n=0;
-	ifstream file(inputFile);
-	string line;
-	if(file.is_open()) {
-		while(getline(file,line)) {
-			n++;
-		}
-		file.close();
-	}
-	return n;
-}
 
-void Simulator::tasksFromFile(char* inputFile, Task* tasks[])
+void Simulator::createTasks(int tasksParam[][4], Task* tasks[],int n)
 {
-	string line;
-	ifstream file(inputFile);
-	int params[4];
-	int j=0;
-	if(file.is_open()) {
-		while(getline(file,line)) {
-			string s;
-			stringstream stream(line);
-			int i=0;
-			while(getline(stream,s,' ')) {
-				params[i] = atoi(((string)s).c_str());
-				i++;
-			}
-			tasks[j] = new Task(params[0],params[1],params[2],
-					params[3]);
-			j++;
-		}
-		file.close();
+	for(int i=0;i<n;i++) {
+		tasks[i] = new Task(tasksParam[i][0],tasksParam[i][1],
+				tasksParam[i][2],tasksParam[i][3]);
 	}
 }
 
 void Simulator::simulation(Task* tasks[],int n,int delta)
 {
+	this->preemptions = 0;
+	this->idleTime = 0;
 	int t=0;//time
 	int studInt = computeStudInt(tasks,n);
 	int taskPrior[n];
@@ -84,8 +58,6 @@ void Simulator::simulation(Task* tasks[],int n,int delta)
 	int taskRunPrior = 0;
 	int taskStatus;
 	int p;
-	int idleTime=0;
-	int preemptions=0;
 	bool idle;//True if the CPU has just been idle.
 
 	for(t=0;t<studInt;t++) {
@@ -156,7 +128,7 @@ void Simulator::simulation(Task* tasks[],int n,int delta)
 				#endif	
 				tasks[taskRunning]->preempt();
 				if(tasks[taskRunning]->hasStarted()) {
-					preemptions++;
+					this->preemptions++;
 				}
 			}
 
@@ -181,7 +153,7 @@ void Simulator::simulation(Task* tasks[],int n,int delta)
 				for(i=0;i<n&&!(tasks[taskPrior[i]]->isWaiting());
 						i++);
 				if(i == n) {
-					idleTime++;
+					this->idleTime++;
 					idle = true;
 					#ifdef _DEBUG
 					cout << "Now in idle time" << endl;
@@ -200,7 +172,7 @@ void Simulator::simulation(Task* tasks[],int n,int delta)
 			}
 		}
 		else if(idle) {
-			idleTime++;
+			this->idleTime++;
 		}
 		
 	}
