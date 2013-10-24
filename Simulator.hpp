@@ -15,12 +15,14 @@ public:
 	void setPriorities(Task* tasks[],int taskPrior[],int n,int time);
 	int getPreemptions() {return this->preemptions;}
 	int getIdleTime() {return this->idleTime;}
+	int getStudInt() {return this->studInt;}
 
 private:
 //	Task* tasks[];
 	int preemptions;
 	int idleTime;
 	int delta;
+	int studInt;
 };
 
 #endif

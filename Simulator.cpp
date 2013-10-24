@@ -194,6 +194,8 @@ int Simulator::computeStudInt(Task* tasks[],int n)
 	}
 
 	cout << "Study interval: " << studInt << endl;
+	this->studInt = studInt;
+	//TODO usage a private variable
 	return studInt;
 }
 
