@@ -15,51 +15,11 @@ Task::Task(int O,int T,int D,int C)
 
 Task::~Task(){}
 
-int Task::getOffset()
-{
-	return this->O;
-}
-
-void Task::setOffset(int O)
-{
-	this->O=O;
-}
-
-int Task::getPeriod()
-{
-	return this->T;
-}
-
-int Task::getDeadline()
-{
-	return this->D;
-}
-
-void Task::setDeadline(int D)
-{
-	this->D=D;
-}
-
-int Task::getWCET()
-{
-	return this->C;
-}
-
 int Task::getLaxity(int time)
 {
 	//Beware, (time/T)*T can't be simplified, since time/T
 	//doesn't keep the remainder
 	return (time/this->T)*this->T + this->D - time - (this->C - this->elapsed);
-}
-
-void Task::setPriority(int p)
-{
-	this->priority = p;
-}
-
-int Task::getPriority()
-{
-	return this->priority;
 }
 
 void Task::preempt()
@@ -94,4 +54,9 @@ int Task::runJob()
 	}
 	else
 		return 1;
+}
+
+bool Task::hasStarted()
+{
+	return (elapsed > 0);
 }

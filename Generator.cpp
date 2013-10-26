@@ -17,12 +17,21 @@ Generator::Generator(int u, int tN)
 
 void Generator::generateTasks(int tasks[][4])
 {
+	double realUtil = 0.0;
 	for(int i=0;i<this->tasksNumber;i++) {
 		tasks[i][0]=0;//Offset
 		tasks[i][3]=rand()%30+1;//WCET
-		tasks[i][1]=tasks[i][3]*(this->tasksNumber*100/util);//Period
+		tasks[i][1]=tasks[i][3]*(this->tasksNumber*100/this->util);//Period
 		tasks[i][2]=tasks[i][3]+rand()%(tasks[i][1]-tasks[i][3]-1);//Deadline
+		realUtil += ((double)tasks[i][3]/(double)tasks[i][1])*100;
 	}
+//TODO offer the opportunity to ouput the actual utilization
+	cout << "The system utilization actually is: " << realUtil << endl;
+//TODO for the report: One of the problems has been to determine how to
+//split the utilization between the tasks. Easy solution choosen:
+//each task has the same utilization, U/n. The fewer the tasks, the less precise
+//the actual utilization is.
+	
 }
 
 void Generator::tasksToFile(char* outFile, int tasks[][4])

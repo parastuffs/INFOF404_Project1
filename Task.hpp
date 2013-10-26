@@ -4,18 +4,16 @@
 class Task
 {
 public:
-	Task();
+	Task();//TODO not necessary anymore, I think
 	Task(int O,int T,int D,int C);
 	~Task();
-	int getOffset();
-	int getPeriod();
-	int getDeadline();
-	int getWCET();
+	int getOffset() {return this->O;}
+	int getPeriod() {return this->T;}
+	int getDeadline() {return this->D;}
+	int getWCET() {return this->C;}
 	int getLaxity(int t);
-	int getPriority();
-	void setPriority(int p);
-	void setOffset(int offset);
-	void setDeadline(int deadline);
+	int getPriority() {return this->priority;}
+	void setPriority(int p) {this->priority=p;}
 	bool isRunning() {return running;}
 	bool isWaiting() {return waiting;}
 	void preempt();
@@ -23,7 +21,7 @@ public:
 	void recieveCPU();
 	void launchJob();
 	int runJob();
-	bool hasStarted() {return (elapsed > 0);}
+	bool hasStarted();
 
 private:
 	int O,T,D,C;
