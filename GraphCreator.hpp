@@ -5,7 +5,7 @@
 class GraphCreator
 {
 public:
-	GraphCreator(std::vector<int> points,int delta,int studInt,int tAm,int preemps,int idleT);
+	GraphCreator(std::vector<int> points,int delta,int studInt,int tAm,int preemps,int idleT, int graphMarks[][2]);
 	~GraphCreator(){}
 
 

@@ -26,7 +26,12 @@ Simulator::Simulator(int n, int tasksParam[][4],int delta)
 
 	simulation(tasks);
 	cout << "Generating the graph of the scheduling under 'graph.png'" << endl;
-	new GraphCreator(this->graph, this->delta, this->studInt,this->tAm,this->preemptions,this->idleTime);
+	int graphMarks[this->tAm][2];//{Period,Deadline} to mark on the graph
+	for(int i=0;i<this->tAm;i++) {
+		graphMarks[i][0] = tasks[i]->getPeriod();
+		graphMarks[i][1] = tasks[i]->getDeadline();
+	}
+	new GraphCreator(this->graph, this->delta, this->studInt,this->tAm,this->preemptions,this->idleTime,graphMarks);
 }
 
 
@@ -46,6 +51,8 @@ void Simulator::simulation(Task* tasks[])
 	int studInt = computeStudInt(tasks);
 	int taskPrior[this->tAm];//Array of the priority of each task, ordered by task.
 //TODO make the time a private member
+//TODO I still seem to have a problem when the delta is too large, tasks happen
+//to preempt themselves.
 	cout << "### LAXITY ### Before sorting" << endl;
 	for(int j=0;j<this->tAm;j++) {
 		cout << "Task #" << j+1 << ":";
