@@ -16,9 +16,9 @@ public:
 	void setPriority(int p) {this->priority=p;}
 	bool isRunning() {return running;}
 	bool isWaiting() {return waiting;}
+	bool isSchedulable(int time);
 	void preempt();
 	void launch();
-	void recieveCPU();
 	void launchJob();
 	int runJob();
 	bool hasStarted();

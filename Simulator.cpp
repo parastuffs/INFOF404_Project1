@@ -10,28 +10,38 @@
 //TODO remove useless includes
 
 //TODO remove _DEBUG statements
-#define _DEBUG
+//#define _DEBUG
 
 using namespace std;
 
-Simulator::Simulator(int n, int tasksParam[][4],int delta)
+Simulator::Simulator(int n, int tasksParam[][4],int delta,bool makeGraph)
 {
 
 	this->delta = delta;
 	this->tAm = n;
+	bool success;
 
 	Task* tasks[tAm];//Array containing the tasks objects
 
 	createTasks(tasksParam,tasks);
 
-	simulation(tasks);
-	cout << "Generating the graph of the scheduling under 'graph.png'" << endl;
-	int graphMarks[this->tAm][2];//{Period,Deadline} to mark on the graph
-	for(int i=0;i<this->tAm;i++) {
-		graphMarks[i][0] = tasks[i]->getPeriod();
-		graphMarks[i][1] = tasks[i]->getDeadline();
+	success = simulation(tasks);
+	if(success) {
+		if(makeGraph) {
+			cout << "Generating the graph of the scheduling under 'graph.png'" << endl;
+			int graphMarks[this->tAm][2];//{Period,Deadline} to mark on the graph
+			for(int i=0;i<this->tAm;i++) {
+				graphMarks[i][0] = tasks[i]->getPeriod();
+				graphMarks[i][1] = tasks[i]->getDeadline();
+			}
+			new GraphCreator(this->graph, this->delta, this->studInt,this->tAm,this->preemptions,this->idleTime,graphMarks);
+		}
 	}
-	new GraphCreator(this->graph, this->delta, this->studInt,this->tAm,this->preemptions,this->idleTime,graphMarks);
+	else {
+		this->preemptions = -1;
+		this->idleTime = -1;
+		cout << "The system was not schedulable. Please try again with a lower delta." << endl;
+	}
 }
 
 
@@ -43,16 +53,15 @@ void Simulator::createTasks(int tasksParam[][4], Task* tasks[])
 	}
 }
 
-void Simulator::simulation(Task* tasks[])
+bool Simulator::simulation(Task* tasks[])
 {
 	this->preemptions = 0;
 	this->idleTime = 0;
 	int t=0;//time
 	int studInt = computeStudInt(tasks);
-	int taskPrior[this->tAm];//Array of the priority of each task, ordered by task.
+	int taskPrior[this->tAm];//Array of the priority of each task, ordered by priotity.
+	bool schedulable = true;//Flag that be triggered in case a job doesn't meet its deadline.
 //TODO make the time a private member
-//TODO I still seem to have a problem when the delta is too large, tasks happen
-//to preempt themselves.
 	cout << "### LAXITY ### Before sorting" << endl;
 	for(int j=0;j<this->tAm;j++) {
 		cout << "Task #" << j+1 << ":";
@@ -71,12 +80,21 @@ void Simulator::simulation(Task* tasks[])
 	int p;
 	bool idle=false;//True if the CPU has just been idle.
 
-	for(t=0;t<studInt;t++) {
+	for(t=0;t<studInt && schedulable;t++) {
 	//Shit just got real
 	
 #ifdef _DEBUG
 		cout << "__Time: " << t << endl;
 #endif	
+		//
+		//Verifying the schedulability of the system
+		//
+		for(int i=0; i<this->tAm; i++) {
+			if(!(tasks[i]->isSchedulable(t)))
+				schedulable = false;
+		}
+
+
 		//
 		//If on delta, set priorities.
 		//
@@ -87,12 +105,13 @@ void Simulator::simulation(Task* tasks[])
 			cout << "Here is what we have, in order of priority:";
 			cout << endl;
 			for(int k=0;k<this->tAm;k++) {
-				cout << taskPrior[k] << ", laxity:";
+				cout << "task " << taskPrior[k] << ", laxity:";
 				cout << tasks[taskPrior[k]]->getLaxity(t);
 				cout << endl;
 			}
 			#endif	
-			taskRunPrior = taskPrior[taskRunning];
+			taskRunPrior = tasks[taskRunning]->getPriority();
+//			cout << "After delta, taskRunPrior=" << taskRunPrior << endl;
 		}
 
 		//
@@ -106,7 +125,7 @@ void Simulator::simulation(Task* tasks[])
 				cout << taskPrior[i] << endl;
 				#endif	
 				if(idle) {
-					//A new job will be waiting. CPU won't go idle.
+					//A new job will be waiting. CPU won't go idle anymore.
 					idle = false;
 					this->graph.push_back(t);//Final idle time.
 					this->graph.push_back(-4);
@@ -129,19 +148,28 @@ void Simulator::simulation(Task* tasks[])
 			//Note: 0 is a higher priority than 1.
 			//
 			p = taskRunPrior+1;//Temp priority
-			for(int j=0;p > taskRunPrior && j < this->tAm;j++) {
+//			cout << "Searching higher priority: p="<<p<<", taskRunPrior="<<taskRunPrior<<endl;
+			for(int i=0; i<this->tAm; i++) {
+//				cout << "i="<<i<< "->"<<taskPrior[i]<<" ";
+			}
+//			cout << endl;
+			bool b=true;
+			for(int j=0;b && j < this->tAm;j++) {
+//				cout << "p="<<p<<"; "<<tasks[taskPrior[j]]->getPriority()<<"; waiting: "<<tasks[taskPrior[j]]->isWaiting()<<" ";
 				if(tasks[taskPrior[j]]->isWaiting() || tasks[taskPrior[j]]->isRunning()) {
 					p = j;
+					b=false;
 				}
 			}
 #ifdef _DEBUG
 			cout << "After the search for higher priority: p="<<p<<", taskRunPrior="<<taskRunPrior<<endl;
+			cout << "tasks(p)=" << taskPrior[p] << "; tasks(TRP)=" << taskPrior[taskRunPrior] << endl;
 #endif
 			
 			//
 			//Preempting if necessary
 			//
-			if(taskRunPrior > p && tasks[taskRunning]->isRunning()) {
+			if(taskRunPrior > p && tasks[taskRunning]->isRunning() && taskRunning!=taskPrior[p]) {//The task running may have changed of priority due to a delta. We need to make sure that the running task and that want to preempt are different
 				#ifdef _DEBUG
 				cout << "Preempting the task #";
 				cout << taskRunning << endl;
@@ -155,6 +183,7 @@ void Simulator::simulation(Task* tasks[])
 				}
 				taskRunning = taskPrior[p];
 				taskRunPrior = p;
+				tasks[taskRunning]->launch();
 				if(tasks[taskRunning]->hasStarted()) {
 					//If it has started, this is a continue
 					this->graph.push_back(-3);
@@ -264,6 +293,9 @@ void Simulator::simulation(Task* tasks[])
 		}
 	}
 #endif
+
+	return schedulable;
+
 }
 
 int Simulator::computeStudInt(Task* tasks[])
@@ -342,7 +374,8 @@ void Simulator::setPriorities(Task* tasks[],int taskPrior[],int time)
 	//Now, I have to got through taskLax[][] and assign
 	//the right priority to each task
 	for(int i=0;i<this->tAm;i++) {
-		tasks[taskLax[0][i]]->setPriority(i+1);
+		//tasks[taskLax[0][i]]->setPriority(i+1);//Why the hell is there a '+1'?
+		tasks[taskLax[0][i]]->setPriority(i);
 		taskPrior[i] = taskLax[0][i];//Tasks ordered by priority
 	}
 

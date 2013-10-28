@@ -21,7 +21,7 @@ int main(int argc, char** argv)
 	int tasksParam[n][4];
 	tasksFromFile(inputFile,tasksParam);
 
-	new Simulator(n,tasksParam,delta);	
+	new Simulator(n,tasksParam,delta,true);	
 	return 0;
 }
 

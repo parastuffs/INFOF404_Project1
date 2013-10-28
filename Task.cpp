@@ -32,11 +32,6 @@ void Task::launch()
 	this->waiting = false;
 }
 
-void Task::recieveCPU()
-{
-	launch();
-}
-
 void Task::launchJob()
 {
 	this->elapsed = 0;
@@ -59,4 +54,12 @@ int Task::runJob()
 bool Task::hasStarted()
 {
 	return (elapsed > 0);
+}
+
+bool Task::isSchedulable(int time)
+{
+	if(this->running)//OK if the deadline is still ahead.
+		return (((time/this->T)*this->T + this->D) > time);
+	else
+		return true;
 }
