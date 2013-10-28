@@ -6,7 +6,9 @@ using namespace std;
 
 int main(int argc, char* argv[])
 {
-	int results[5][5][3];//line - column - {study interval, preemptions, idle times}
+	int results1[5][5][3];//line - column - {study interval, preemptions, idle times}
+	int results2[5][5][3];//line - column - {study interval, preemptions, idle times}
+	int results3[5][5][3];//line - column - {study interval, preemptions, idle times}
 	
 	//
 	//First test: analysis of the system for a fixed number of tasks
@@ -23,28 +25,11 @@ int main(int argc, char* argv[])
 			Generator* gen = new Generator(utilization[j],taskQuantity[1]);
 			gen->generateTasks(tasks);
 			sim[j] = new Simulator(taskQuantity[1],tasks,delta[i]);
-			results[i][j][0] = sim[j]->getStudInt();
-			results[i][j][1] = sim[j]->getPreemptions();
-			results[i][j][2] = sim[j]->getIdleTime();
+			results1[i][j][0] = sim[j]->getStudInt();
+			results1[i][j][1] = sim[j]->getPreemptions();
+			results1[i][j][2] = sim[j]->getIdleTime();
 		}
 	}
-	cout << "### Horizontal: Delta, Vertical: Utilization. 3 tasks in the system. ###" << endl;
-	for(int i=0;i<5;i++) {
-		cout << "\t" << utilization[i] << "\t";
-	}
-	cout << endl;
-	for(int i=0;i<5;i++) {
-		cout << delta[i] << "\t";
-		for(int j=0;j<5;j++) {
-			for(int k=0;k<3;k++) {
-				cout << results[i][j][k] << ";";
-			}
-			cout << "\t";
-		}
-		cout << endl;
-	}
-
-
 
 	//
 	//Second: constant delta=2.
@@ -57,25 +42,10 @@ int main(int argc, char* argv[])
 			Generator* gen = new Generator(utilization[j],taskQuantity[i]);
 			gen->generateTasks(tasks);
 			sim[j] = new Simulator(taskQuantity[i],tasks,delta[1]);
-			results[i][j][0] = sim[j]->getStudInt();
-			results[i][j][1] = sim[j]->getPreemptions();
-			results[i][j][2] = sim[j]->getIdleTime();
+			results2[i][j][0] = sim[j]->getStudInt();
+			results2[i][j][1] = sim[j]->getPreemptions();
+			results2[i][j][2] = sim[j]->getIdleTime();
 		}
-	}
-	cout << "### Horizontal: Tasks, Vertical: Utilization. Delta = 2. ###" << endl;
-	for(int i=0;i<5;i++) {
-		cout << "\t" << utilization[i] << "\t";
-	}
-	cout << endl;
-	for(int i=0;i<5;i++) {
-		cout << taskQuantity[i] << "\t";
-		for(int j=0;j<5;j++) {
-			for(int k=0;k<3;k++) {
-				cout << results[i][j][k] << ";";
-			}
-			cout << "\t";
-		}
-		cout << endl;
 	}
 
 	//
@@ -89,11 +59,49 @@ int main(int argc, char* argv[])
 			Generator* gen = new Generator(utilization[1],taskQuantity[i]);
 			gen->generateTasks(tasks);
 			sim[j] = new Simulator(taskQuantity[i],tasks,delta[j]);
-			results[i][j][0] = sim[j]->getStudInt();
-			results[i][j][1] = sim[j]->getPreemptions();
-			results[i][j][2] = sim[j]->getIdleTime();
+			results3[i][j][0] = sim[j]->getStudInt();
+			results3[i][j][1] = sim[j]->getPreemptions();
+			results3[i][j][2] = sim[j]->getIdleTime();
 		}
 	}
+
+
+	//
+	//Outputs
+	//
+	cout << "### Horizontal: Tasks, Vertical: Utilization. Delta = 2. ###" << endl;
+	for(int i=0;i<5;i++) {
+		cout << "\t" << utilization[i] << "\t";
+	}
+	cout << endl;
+	for(int i=0;i<5;i++) {
+		cout << taskQuantity[i] << "\t";
+		for(int j=0;j<5;j++) {
+			for(int k=0;k<3;k++) {
+				cout << results2[i][j][k] << ";";
+			}
+			cout << "\t";
+		}
+		cout << endl;
+	}
+
+
+	cout << "### Horizontal: Delta, Vertical: Utilization. 3 tasks in the system. ###" << endl;
+	for(int i=0;i<5;i++) {
+		cout << "\t" << utilization[i] << "\t";
+	}
+	cout << endl;
+	for(int i=0;i<5;i++) {
+		cout << delta[i] << "\t";
+		for(int j=0;j<5;j++) {
+			for(int k=0;k<3;k++) {
+				cout << results1[i][j][k] << ";";
+			}
+			cout << "\t";
+		}
+		cout << endl;
+	}
+
 	cout << "### Horizontal: Tasks, Vertical: Delta. Utilization of 70. ###" << endl;
 	for(int i=0;i<5;i++) {
 		cout << "\t" << delta[i] << "\t";
@@ -103,7 +111,7 @@ int main(int argc, char* argv[])
 		cout << taskQuantity[i] << "\t";
 		for(int j=0;j<5;j++) {
 			for(int k=0;k<3;k++) {
-				cout << results[i][j][k] << ";";
+				cout << results3[i][j][k] << ";";
 			}
 			cout << "\t";
 		}

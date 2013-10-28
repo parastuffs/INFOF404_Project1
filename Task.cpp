@@ -1,7 +1,5 @@
 #include "Task.hpp"
 
-Task::Task(){}
-
 Task::Task(int O,int T,int D,int C)
 {
 	this->O = O;
@@ -12,8 +10,6 @@ Task::Task(int O,int T,int D,int C)
 	this->elapsed = 0;
 	this->running = false;
 }
-
-Task::~Task(){}
 
 int Task::getLaxity(int time)
 {

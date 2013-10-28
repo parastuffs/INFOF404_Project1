@@ -8,18 +8,16 @@ class Simulator
 public:
 	Simulator(int n,int tasksParam[][4],int delta,bool makeGraph=false);
 	~Simulator(){}
-	void createTasks(int tasksParam[][4],Task* tasks[]);
-	int gcd(int a,int b);
-	int lcm(int a,int b);
-	int computeStudInt(Task* tasks[]);
-	bool simulation(Task* tasks[]);
-	void setPriorities(Task* tasks[],int taskPrior[],int time);
 	int getPreemptions() {return this->preemptions;}
 	int getIdleTime() {return this->idleTime;}
 	int getStudInt() {return this->studInt;}
-//TODO encapsulation of the methods
 private:
-//	Task* tasks[];
+	void setPriorities(Task* tasks[],int taskPrior[],int time);
+	void computeStudInt(Task* tasks[]);
+	bool simulation(Task* tasks[]);
+	void createTasks(int tasksParam[][4],Task* tasks[]);
+	int lcm(int a,int b);
+	int gcd(int a,int b);
 	int preemptions;
 	int idleTime;
 	int delta;

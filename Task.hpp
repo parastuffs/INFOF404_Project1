@@ -4,9 +4,8 @@
 class Task
 {
 public:
-	Task();//TODO not necessary anymore, I think
 	Task(int O,int T,int D,int C);
-	~Task();
+	~Task() {}
 	int getOffset() {return this->O;}
 	int getPeriod() {return this->T;}
 	int getDeadline() {return this->D;}

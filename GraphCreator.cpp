@@ -1,6 +1,5 @@
 #include "GraphCreator.hpp"
 #include <pngwriter.h>
-#include <iostream>
 
 using namespace std;
 
@@ -9,7 +8,6 @@ GraphCreator::GraphCreator(vector<int> points,int delta,int studInt,int tAm,int 
 	int maxX = studInt*20+20;
 	int maxY = tAm*20+20;
 
-	cout << "maxX,maxY: " << maxX << ", " << maxY << endl;
 	pngwriter png(maxX,maxY,0,"graph.png");
 	for(unsigned int i=0;i<points.size();i+=5) {
 		if(points[i+1] == -1) {

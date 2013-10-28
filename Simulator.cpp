@@ -2,15 +2,6 @@
 #include "GraphCreator.hpp"
 
 #include <iostream>
-#include <string>
-#include <fstream>
-#include <sstream>
-#include <cstdio>
-#include <cstdlib>
-//TODO remove useless includes
-
-//TODO remove _DEBUG statements
-//#define _DEBUG
 
 using namespace std;
 
@@ -58,21 +49,10 @@ bool Simulator::simulation(Task* tasks[])
 	this->preemptions = 0;
 	this->idleTime = 0;
 	int t=0;//time
-	int studInt = computeStudInt(tasks);
+	computeStudInt(tasks);
 	int taskPrior[this->tAm];//Array of the priority of each task, ordered by priotity.
 	bool schedulable = true;//Flag that be triggered in case a job doesn't meet its deadline.
-//TODO make the time a private member
-	cout << "### LAXITY ### Before sorting" << endl;
-	for(int j=0;j<this->tAm;j++) {
-		cout << "Task #" << j+1 << ":";
-		cout << tasks[j]->getLaxity(t) << endl;
-	}
 	setPriorities(tasks,taskPrior,t);
-	cout << "Hence the priorities:" << endl;
-	for(int j=0;j<this->tAm;j++) {
-		cout << "Task #" << j+1 << ":";
-		cout << tasks[j]->getPriority() << endl;
-	}
 
 	int taskRunning = taskPrior[0];//Highest priority task uppon beginning
 	int taskRunPrior = 0;//Priority of the running task
@@ -80,13 +60,9 @@ bool Simulator::simulation(Task* tasks[])
 	int p;
 	bool idle=false;//True if the CPU has just been idle.
 
-	for(t=0;t<studInt && schedulable;t++) {
+	for(t=0;t<this->studInt && schedulable;t++) {
 	//Shit just got real
 	
-#ifdef _DEBUG
-		cout << "__Time: " << t << endl;
-#endif	
-		//
 		//Verifying the schedulability of the system
 		//
 		for(int i=0; i<this->tAm; i++) {
@@ -94,24 +70,12 @@ bool Simulator::simulation(Task* tasks[])
 				schedulable = false;
 		}
 
-
 		//
 		//If on delta, set priorities.
 		//
 		if(t%this->delta == 0) {//
 			setPriorities(tasks,taskPrior,t);
-			#ifdef _DEBUG
-			cout << "Setting priorities...";
-			cout << "Here is what we have, in order of priority:";
-			cout << endl;
-			for(int k=0;k<this->tAm;k++) {
-				cout << "task " << taskPrior[k] << ", laxity:";
-				cout << tasks[taskPrior[k]]->getLaxity(t);
-				cout << endl;
-			}
-			#endif	
 			taskRunPrior = tasks[taskRunning]->getPriority();
-//			cout << "After delta, taskRunPrior=" << taskRunPrior << endl;
 		}
 
 		//
@@ -120,24 +84,12 @@ bool Simulator::simulation(Task* tasks[])
 		for(int i=0;i<this->tAm;i++) {
 			if(t%tasks[taskPrior[i]]->getPeriod() == 0) {
 				tasks[taskPrior[i]]->launchJob();
-				#ifdef _DEBUG
-				cout << "Lauching a new job for task #";
-				cout << taskPrior[i] << endl;
-				#endif	
 				if(idle) {
 					//A new job will be waiting. CPU won't go idle anymore.
 					idle = false;
 					this->graph.push_back(t);//Final idle time.
 					this->graph.push_back(-4);
 				}
-				/*
-				//Set the task with a new job as running. If
-				//more than one have a new job, the least
-				//priority will be set as running. This is
-				//then corrected in the next loop.
-				taskRunning = taskPrior[i];
-				taskRunPrior = i;
-				*/
 			}
 		}
 
@@ -148,32 +100,18 @@ bool Simulator::simulation(Task* tasks[])
 			//Note: 0 is a higher priority than 1.
 			//
 			p = taskRunPrior+1;//Temp priority
-//			cout << "Searching higher priority: p="<<p<<", taskRunPrior="<<taskRunPrior<<endl;
-			for(int i=0; i<this->tAm; i++) {
-//				cout << "i="<<i<< "->"<<taskPrior[i]<<" ";
-			}
-//			cout << endl;
 			bool b=true;
 			for(int j=0;b && j < this->tAm;j++) {
-//				cout << "p="<<p<<"; "<<tasks[taskPrior[j]]->getPriority()<<"; waiting: "<<tasks[taskPrior[j]]->isWaiting()<<" ";
 				if(tasks[taskPrior[j]]->isWaiting() || tasks[taskPrior[j]]->isRunning()) {
 					p = j;
 					b=false;
 				}
 			}
-#ifdef _DEBUG
-			cout << "After the search for higher priority: p="<<p<<", taskRunPrior="<<taskRunPrior<<endl;
-			cout << "tasks(p)=" << taskPrior[p] << "; tasks(TRP)=" << taskPrior[taskRunPrior] << endl;
-#endif
 			
 			//
 			//Preempting if necessary
 			//
 			if(taskRunPrior > p && tasks[taskRunning]->isRunning() && taskRunning!=taskPrior[p]) {//The task running may have changed of priority due to a delta. We need to make sure that the running task and that want to preempt are different
-				#ifdef _DEBUG
-				cout << "Preempting the task #";
-				cout << taskRunning << endl;
-				#endif	
 				tasks[taskRunning]->preempt();
 				if(tasks[taskRunning]->hasStarted()) {
 					//Only if the task being interrupted has
@@ -208,11 +146,6 @@ bool Simulator::simulation(Task* tasks[])
 				}
 			}
 
-			#ifdef _DEBUG
-			cout << "Task running is #";
-			cout << taskRunning << endl;
-			#endif	
-
 			//If in the previous unit of time, a job reached its end,
 			//and if an other job was already waiting and is now
 			//executed, this job did not have a chance to make
@@ -230,10 +163,6 @@ bool Simulator::simulation(Task* tasks[])
 			taskStatus = tasks[taskRunning]->runJob();
 
 			if(taskStatus == 0) {
-				#ifdef _DEBUG
-				cout << "Task #" << taskRunning;
-				cout << " ended." << endl;
-				#endif	
 				this->graph.push_back(t+1);//Final task's running time, but it's still running during this unit of time, hence the '+1'.
 				this->graph.push_back(-4);
 				int i = 0;
@@ -241,26 +170,13 @@ bool Simulator::simulation(Task* tasks[])
 				if(i == this->tAm) {
 					idle = true;
 					this->idleTime++;
-					#ifdef _DEBUG
-					cout << "Now in idle time" << endl;
-					#endif	
 				}
 				else {
 					taskRunning = taskPrior[i];
-					#ifdef _DEBUG
-					cout << "Still not idle. FUCK" << endl;
-					cout << "i = " << i << endl;
-					#endif	
 				}
-			}
-			else if(taskStatus == 1) {
-				//Continue with the same job
 			}
 		}
 		else if(idle) {
-#ifdef _DEBUG
-			cout << "Idling" << endl;
-#endif
 			if(this->graph.back() == -4) {
 			//If the previous unit of time was suitable for an idle
 			//time, that is the en of a job and no other job waiting,
@@ -284,32 +200,20 @@ bool Simulator::simulation(Task* tasks[])
 	cout << "### END of the simulation ###" << endl;
 	cout << "Total idle time: " << idleTime << endl;
 	cout << "Total number of preemptions: " << preemptions << endl;
-#ifdef _DEBUG
-	cout << "Graph vector:" << endl;
-	for(unsigned int i=0;i<this->graph.size();i++) {
-		cout << this->graph[i] << " ";
-		if(this->graph[i] == -4 || this->graph[i] == -5) {
-			cout << endl;
-		}
-	}
-#endif
 
 	return schedulable;
 
 }
 
-int Simulator::computeStudInt(Task* tasks[])
+void Simulator::computeStudInt(Task* tasks[])
 {
 	//int periods[n];
 	int studInt=1;
 	for(int i=0;i<this->tAm;i++) {
 		studInt = lcm(studInt,tasks[i]->getPeriod());
 	}
-
-	cout << "Study interval: " << studInt << endl;
 	this->studInt = studInt;
-	//TODO usage a private variable
-	return studInt;
+	cout << "Study interval: " << studInt << endl;
 }
 
 /**
